@@ -1,57 +1,57 @@
-# Assignment2
+# Lines of Action – Minimax AI Project
 
-Below are the rules for the game Lines of Action. For this part of the assignment you are to write a board evaluator, and a correct alpha-beta minimax search for the game. I have provided Java files to maintain the board state, to test the legality of a move, and to generate a list of possible moves as a Vector for one or all of the pieces in the class directory. You are responsible for completing the LOABoard.heuristicEvaluation(), and writing a MinimaxAlphaBetaSearch class. Do not feel constrained by my code, if you feel that you need additional elements or different functionality feel free to change it, but be sure to document the changes.
+## Overview
 
+This repository contains **my personal project** for solving the game **Lines of Action (LOA)** using Artificial Intelligence techniques.
 
-Notes:
+The focus of the project is the **game-solving logic**, not the graphical interface.
+The UI used in this project was taken from an external source I found online and then adapted to work with my AI engine. The original UI is used strictly as a visualization and interaction layer.
 
-- In the LOABoard class, set the BOARD_SIZE to be 4 or 5 for easier debugging (mnkGame, i.e. TicTacToe is also included).
+## What I Built
 
-- In the LOACustomPanel class, set the SELF_PLAY to true if you want to play against yourself to get a feel for the rules.
+The core contribution of this project is an AI player based on:
 
-Lines of Action Rules:
+* **Minimax search tree**
+* **Alpha-Beta Pruning** for performance optimization
+* Custom **heuristic evaluation functions** for LOA board states
 
-The black pieces are placed in two rows along the top and bottom of the board, while the white pieces are placed in two files at the left and right side of the board (Figure 1).
-The players alternately move, starting with Black.
-A player to move must move one of its pieces. A move takes place in a straight line (up, down, left, right, and all four diagonals), exactly as many squares as there are pieces of either color anywhere along the line of movement (These are the Lines of Action).
-A player may jump over its own pieces.
-A player may not jump over the opponent’s pieces, but can capture them by landing on them.
-To win a player must move all their pieces on the board into one connected unit. The first player to do so is the winner. The connections within the group may be either orthogonal or diagonal. For example, in Figure 2 Black has won because the black pieces form one connected unit.
-A2image002.png
+The AI evaluates game states, searches possible move sequences, and selects optimal moves according to the minimax principle while efficiently pruning irrelevant branches.
 
-Figure 1: Starting board.
+## Key Features
 
-![Starting Board](LOA-Board.png)
+* Full implementation of **Minimax with Alpha-Beta Pruning**
+* Game-state evaluation tailored specifically for **Lines of Action**
+* Modular design separating:
 
-If one player’s pieces are reduced by captures to a single piece, the game is a win for this player.
-If a move simultaneously creates a single connected unit for both players, the player that moved wins.
-A2image003.png
+  * Game logic
+  * Search algorithm
+  * Heuristic evaluation
+  * UI layer
 
-Figure 2: Black wins.
+## What This Project Is NOT
 
-![Black Wins](LOA-Black-Wins.png)
+* This is **not** a UI-focused project
+* The UI was **not originally written by me** and is only used as a base framework
+* This repository does **not** represent a generic or instructor-provided template
 
-Additional Resources:
+## Purpose
 
-There are several articles on Lines of Action in the course directory under the subdirectory Articles. Some other links on the game:
+This project was built to:
 
-Lines of Action home page
+* Practice and demonstrate adversarial search algorithms
+* Explore heuristic design for board games
+* Apply theoretical AI concepts (Minimax, Alpha-Beta Pruning) in a full working game
 
-[Lines of Action](http://boardspace.net/loa/)
+## Technologies
 
-[Chess Programming - LOA](https://www.chessprogramming.org/Lines_of_Action)
+* Java
+* Minimax Search
+* Alpha-Beta Pruning
 
-U of A GAMES Group Home Page (YL and MONA)
-[U of A GAMES](http://webdocs.cs.ualberta.ca/~darse/LOA/)
+## Disclaimer
 
-Mark Winands (MIA)
-[Mark Winands](https://dke.maastrichtuniversity.nl/m.winands/loa/)
+All AI logic, heuristics, and search implementations are my own work. Credit for the UI belongs to its original source.
 
+---
 
-Turn-Ins:
-
-Turn in should include your 1) source code, 2) instructions for compilation, and 3) a write-up describing 3.a) your implementation, 3.b) heuristic details, and 3.c) experiences.
-
-Stipulations:
-
-You are responsible for having your search halt at the set threshold depth, pruning the correct amount of space, and returning correct end game actions. For the threshold depth, note that one step is one players move whether it is your move or your opponents, and not your programs and your opponents countermove.
+If you are interested in the AI logic, heuristics, or search optimizations, focus on the game engine and minimax-related classes rather than the UI components.
