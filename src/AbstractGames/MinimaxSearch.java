@@ -61,13 +61,15 @@ public class MinimaxSearch<BOARD extends Board, MOVE extends Move> implements Se
         if (this.transposition_table.containsKey(possible_key)) {
             return this.transposition_table.get(possible_key);
         }
+
+
+        Move move_list = board.generateMoves();
+        if (move_list == null)
+            return null;
+
         int root_player = board.getCurrentPlayer();
         MOVE best_move = null;
         double best_value = Double.NEGATIVE_INFINITY;
-
-        // Get moves (and optionally order them)
-        Move move_list = board.generateMoves();
-        if (move_list == null) return null;
         move_list = board.moveOrdering(move_list, 0);
 
         for (Move m = move_list; m != null; m = m.next) {
@@ -88,57 +90,54 @@ public class MinimaxSearch<BOARD extends Board, MOVE extends Move> implements Se
         return best_move;
     }
 
-    /**
-     * Returns the minimax value of the current position from the ROOT player's perspective.
-     */
+
     private double minimaxValue(int depth, int rootPlayer, double alpha, double beta) {
-        // Terminal or depth limit
         int game_condition = board.endGame();
         if (game_condition != Board.GAME_CONTINUE || depth == 0) {
             totalLeafNodes++;
             return evalForRoot(rootPlayer, game_condition);
         }
 
-        boolean is_maximizing_player = (board.getCurrentPlayer() == rootPlayer);
 
         Move move_list = board.generateMoves();
-        if (move_list == null) { // no legal moves
+        if (move_list == null) {
             totalLeafNodes++;
             return evalForRoot(rootPlayer, board.endGame());
         }
 
-        move_list = board.moveOrdering(move_list, depth);
-
+        boolean is_maximizing_player = (board.getCurrentPlayer() == rootPlayer);
+        move_list = board.moveOrdering(move_list, 0);
+        depth--;
         if (is_maximizing_player) {
-            double best = move_list.value;
+            double best_value = Double.NEGATIVE_INFINITY;
             for (Move m = move_list; m != null; m = m.next) {
                 totalNodesSearched++;
                 if (!board.makeMove(m))
                     continue;
-                double optional_max_value = minimaxValue(depth - 1, rootPlayer, alpha, beta);
+                double optional_max_value = minimaxValue(depth, rootPlayer, alpha, beta);
                 board.reverseMove(m);
-                if (optional_max_value > best) best = optional_max_value;
+                best_value = Math.max(best_value, optional_max_value);
                 alpha = Math.max(alpha, optional_max_value);
                 if (beta <= alpha) {
                     break;
                 }
             }
-            return best;
+            return best_value;
         } else {
-            double best = move_list.value;
+            double best_value = Double.POSITIVE_INFINITY;
             for (Move m = move_list; m != null; m = m.next) {
                 totalNodesSearched++;
                 if (!board.makeMove(m))
                     continue;
-                double optional_min_value = minimaxValue(depth - 1, rootPlayer, alpha, beta);
+                double optional_min_value = minimaxValue(depth, rootPlayer, alpha, beta);
                 board.reverseMove(m);
-                if (optional_min_value > best) best = optional_min_value;
+                best_value = Math.min(best_value, optional_min_value);
                 beta = Math.min(alpha, optional_min_value);
                 if (beta <= alpha) {
                     break;
                 }
             }
-            return best;
+            return best_value;
         }
     }
 
