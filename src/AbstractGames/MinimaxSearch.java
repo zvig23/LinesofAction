@@ -50,11 +50,6 @@ public class MinimaxSearch<BOARD extends Board, MOVE extends Move> implements Se
     }
 
 
-    private boolean isGameEnded() {
-        return this.board.endGame() != Board.GAME_CONTINUE;
-    }
-
-
     /**
      * TODO Write Minimax here!
      *
@@ -62,65 +57,95 @@ public class MinimaxSearch<BOARD extends Board, MOVE extends Move> implements Se
      * @return best move found at this node
      */
     private MOVE Minimax(int depth) {
-        return Maximize(depth, -1, 1);
-    }
-
-
-    private MOVE Maximize(int depth, double alpha, double beta) {
-        String possible_key = String.format(this.board.toString(), this.board.getCurrentPlayer());
+        String possible_key = this.board.toString();
         if (this.transposition_table.containsKey(possible_key)) {
             return this.transposition_table.get(possible_key);
         }
-        Move move_list = this.board.generateMoves();
-        Move best_move = move_list;
-        if (this.isGameEnded() || depth == 0) {
-            Move move_order_asc = this.board.moveOrdering(move_list, 0);
-            this.totalNodesSearched += 1;
-            this.totalLeafNodes += 1;
-            return (MOVE) move_order_asc;
-        }
+        int root_player = board.getCurrentPlayer();
+        MOVE best_move = null;
+        double best_value = Double.NEGATIVE_INFINITY;
+
+        // Get moves (and optionally order them)
+        Move move_list = board.generateMoves();
+        if (move_list == null) return null;
+        move_list = board.moveOrdering(move_list, 0);
+
         for (Move m = move_list; m != null; m = m.next) {
-            this.board.makeMove(m);
-            this.totalNodesSearched++;
-            Move optinal_move = this.Minimize(depth - 1, alpha, beta);
-            if (optinal_move.value > best_move.value)
-                best_move = optinal_move;
-            this.board.reverseMove(m);
-            alpha = Math.max(alpha, optinal_move.value);
-            if (beta <= alpha)
-                return (MOVE) best_move;
+            totalNodesSearched++;
+
+            if (!board.makeMove(m))
+                continue;
+
+            double optional_value = minimaxValue(depth - 1, root_player, -1, 1);
+
+            board.reverseMove(m);
+
+            best_value = Math.max(optional_value, best_value);
+            if (optional_value == best_value)
+                best_move = (MOVE) m;
         }
-        return (MOVE) best_move;
+        this.transposition_table.put(this.board.toString(), best_move);
+        return best_move;
     }
 
-
-    private MOVE Minimize(int depth, double alpha, double beta) {
-        String possible_key = String.format(this.board.toString(), this.board.getCurrentPlayer());
-        if (this.transposition_table.containsKey(possible_key))
-            return this.transposition_table.get(possible_key);
-        Move move_list = this.board.generateMoves();
-        Move best_move = move_list;
-        if (this.isGameEnded() || depth == 0) {
-            Move move_order_asc = this.board.moveOrdering(move_list, 0);
-            this.totalNodesSearched += 1;
-            this.totalLeafNodes += 1;
-            while (move_order_asc.next != null)
-                move_order_asc = move_order_asc.next;
-            return (MOVE) move_order_asc;
-
+    /**
+     * Returns the minimax value of the current position from the ROOT player's perspective.
+     */
+    private double minimaxValue(int depth, int rootPlayer, double alpha, double beta) {
+        // Terminal or depth limit
+        int game_condition = board.endGame();
+        if (game_condition != Board.GAME_CONTINUE || depth == 0) {
+            totalLeafNodes++;
+            return evalForRoot(rootPlayer, game_condition);
         }
-        for (Move m = move_list; m != null; m = m.next) {
-            this.board.makeMove(m);
-            this.totalNodesSearched++;
-            Move optinal_move = this.Maximize(depth - 1, alpha, beta);
-            if (optinal_move.value < best_move.value)
-                best_move = optinal_move;
-            this.board.reverseMove(m);
-            beta = Math.min(beta, optinal_move.value);
-            if (beta <= alpha)
-                return (MOVE) best_move;
 
+        boolean is_maximizing_player = (board.getCurrentPlayer() == rootPlayer);
+
+        Move move_list = board.generateMoves();
+        if (move_list == null) { // no legal moves
+            totalLeafNodes++;
+            return evalForRoot(rootPlayer, board.endGame());
         }
-        return (MOVE) best_move;
+
+        move_list = board.moveOrdering(move_list, depth);
+
+        if (is_maximizing_player) {
+            double best = move_list.value;
+            for (Move m = move_list; m != null; m = m.next) {
+                totalNodesSearched++;
+                if (!board.makeMove(m))
+                    continue;
+                double optional_max_value = minimaxValue(depth - 1, rootPlayer, alpha, beta);
+                board.reverseMove(m);
+                if (optional_max_value > best) best = optional_max_value;
+                alpha = Math.max(alpha, optional_max_value);
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+            return best;
+        } else {
+            double best = move_list.value;
+            for (Move m = move_list; m != null; m = m.next) {
+                totalNodesSearched++;
+                if (!board.makeMove(m))
+                    continue;
+                double optional_min_value = minimaxValue(depth - 1, rootPlayer, alpha, beta);
+                board.reverseMove(m);
+                if (optional_min_value > best) best = optional_min_value;
+                beta = Math.min(alpha, optional_min_value);
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+            return best;
+        }
+    }
+
+    private double evalForRoot(int rootPlayer, int endState) {
+        if (endState == Board.GAME_DRAW) return 0.0;
+        if (endState != Board.GAME_CONTINUE)
+            return (endState == rootPlayer) ? 1.0 : -1.0;
+        return board.heuristicEvaluation();
     }
 }

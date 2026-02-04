@@ -394,9 +394,7 @@ public class LOABoard extends Board {
         int current_player = getCurrentPlayer();
         double p1 = calculateHoodsRatio(current_player);
         double p2 = calculateHoodsRatio(opponent(current_player));
-        Random random = new Random();
-        double eps = (random.nextDouble() * 2 - 1) / 10.0;
-        return (p1 - p2 + eps) / (p1 + p2);
+        return Math.tanh(p2 - p1);
     }
 
     private double calculateHoodsRatio(int player) {
