@@ -57,7 +57,7 @@ public class MinimaxSearch<BOARD extends Board, MOVE extends Move> implements Se
      * @return best move found at this node
      */
     private MOVE Minimax(int depth) {
-        String possible_key = this.board.toString();
+        String possible_key = this.board.toString() + "|D:" + depth;
         if (this.transposition_table.containsKey(possible_key)) {
             return this.transposition_table.get(possible_key);
         }
@@ -86,12 +86,13 @@ public class MinimaxSearch<BOARD extends Board, MOVE extends Move> implements Se
             if (optional_value == best_value)
                 best_move = (MOVE) m;
         }
-        this.transposition_table.put(this.board.toString(), best_move);
+        this.transposition_table.put(possible_key, best_move);
         return best_move;
     }
 
 
     private double minimaxValue(int depth, int rootPlayer, double alpha, double beta) {
+        String possible_key = this.board.toString() + "|D:" + depth;
         int game_condition = board.endGame();
         if (game_condition != Board.GAME_CONTINUE || depth == 0) {
             totalLeafNodes++;
@@ -106,6 +107,7 @@ public class MinimaxSearch<BOARD extends Board, MOVE extends Move> implements Se
         }
 
         boolean is_maximizing_player = (board.getCurrentPlayer() == rootPlayer);
+        Move best_move = move_list;
         move_list = board.moveOrdering(move_list, 0);
         depth--;
         if (is_maximizing_player) {
@@ -116,12 +118,15 @@ public class MinimaxSearch<BOARD extends Board, MOVE extends Move> implements Se
                     continue;
                 double optional_max_value = minimaxValue(depth, rootPlayer, alpha, beta);
                 board.reverseMove(m);
+                if (best_value < optional_max_value)
+                    best_move = m;
                 best_value = Math.max(best_value, optional_max_value);
                 alpha = Math.max(alpha, optional_max_value);
                 if (beta <= alpha) {
                     break;
                 }
             }
+            transposition_table.put(possible_key, (MOVE) best_move);
             return best_value;
         } else {
             double best_value = Double.POSITIVE_INFINITY;
@@ -131,12 +136,15 @@ public class MinimaxSearch<BOARD extends Board, MOVE extends Move> implements Se
                     continue;
                 double optional_min_value = minimaxValue(depth, rootPlayer, alpha, beta);
                 board.reverseMove(m);
+                if (best_value > optional_min_value)
+                    best_move = m;
                 best_value = Math.min(best_value, optional_min_value);
-                beta = Math.min(alpha, optional_min_value);
+                beta = Math.min(beta, optional_min_value);
                 if (beta <= alpha) {
                     break;
                 }
             }
+            transposition_table.put(possible_key, (MOVE) best_move);
             return best_value;
         }
     }
